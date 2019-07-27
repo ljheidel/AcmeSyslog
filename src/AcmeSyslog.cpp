@@ -1,5 +1,23 @@
 /*
  *  AcmeSyslog.cpp - A multi-output Arduino system logging library for the ESP8266.
+ *  Author: Luke Heidelberger <ljheidel@gmail.com>
+ *  Date:   27 Jul 2019
+ *  
+ *  This file is part of AcmeSyslog.
+ *
+ *  Foobar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  Foobar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with AcmeLogger.  If not, see <https://www.gnu.org/licenses/>.
+ *  
  */
 
 #include "AcmeSyslog.h"
@@ -16,7 +34,7 @@ bool file_init = false;
 int serial_speed = SERIAL_SPEED_DEFAULT;
 bool log_timestamp = LOG_TIMESTAMP_DEFAULT;
 
-String service = DEFAULT_SERVICE;
+String app_name;
 
 File syslog_file;
 
@@ -41,12 +59,13 @@ int AcmeSyslog::getMode() {
   return mode;
 }
 
-void AcmeSyslog::setService(String s) {
-  service = s;
+void AcmeSyslog::setAppName(String a) {
+  app_name = a;
+  syslog.appName(a);
 }
 
-String AcmeSyslog::getService() {
-  return service;
+String AcmeSyslog::getAppName() {
+  return app_name;
 }
 
 void AcmeSyslog::setLogLevel(int t, int s, int f) {
@@ -104,11 +123,29 @@ long AcmeSyslog::getSerialSpeed() {
   return serial_speed;
 }
 
-void AcmeSyslog::configSyslog(){
-  
+void AcmeSyslog::configSyslog(String s, int p, String h, String a, int dp){
+  setSyslogServer(s, p);
+  setSyslogDeviceHostname(h);
+  setAppName(a);
+  setSyslogDefaultPriority(db);
+}
+
+void AcmeSyslog::setSyslogServer(String s, int p) {
+  syslog.server(s, p);
+}
+
+void AcmeSyslog::setSyslogDeviceHostname(String h) {
+  syslog.deviceHostname(h);
+}
+
+void AcmeSyslog::setSyslogDefaultPriority(int dp) {
+  syslog.defaultPriority(dp);
 }
 
 void AcmeSyslog::init() {
+
+  setAppName(DEFAULT_APP_NAME);
+  
   if (getMode() | USE_SERIAL) {
    initSerial(getSerialSpeed());
   }

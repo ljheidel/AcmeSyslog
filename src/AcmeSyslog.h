@@ -1,6 +1,24 @@
 /*
-  AcmeSyslog.h - A multi-output Arduino system logging library for the ESP8266.
-*/
+ *  AcmeSyslog.h
+ *  Author: Luke Heidelberger <ljheidel@gmail.com>
+ *  Date:   27 Jul 2019
+ *  
+ *  This file is part of AcmeSyslog.
+ *
+ *  Foobar is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  Foobar is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with AcmeLogger.  If not, see <https://www.gnu.org/licenses/>.
+ *  
+ */
 
 #ifndef AcmeSyslog_h
 #define AcmeSyslog_h
@@ -15,7 +33,7 @@
 #define LOG_LEVEL_DEFAULT LOG_INFO
 #define LOG_TIMESTAMP_DEFAULT true
 
-#define DEFAULT_SERVICE "sketch"
+#define DEFAULT_APP_NAME "sketch"
 
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
@@ -44,7 +62,11 @@ class AcmeSyslog {
     void setLogTimestamp(bool t); 
     bool getLogTimestamp(); 
     void setSerialSpeed(long s); 
-    long getSerialSpeed(); 
+    long getSerialSpeed();
+    void setSyslogServer(String s, int p);
+    void setSyslogDeviceHostname(String h);
+    void setAppName(String a);
+    void setSyslogDefaultPriority(int db); 
     void init();
     void initSyslog();
     void configSyslog();

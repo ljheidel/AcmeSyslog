@@ -28,7 +28,7 @@ int syslog_log_level = LOG_LEVEL_DEFAULT;
 int file_log_level = LOG_LEVEL_DEFAULT;
 
 bool serial_init = false;
-bool syslog_init = false;
+bool syslog_active = false;
 bool file_init = false;
 
 int serial_speed = SERIAL_SPEED_DEFAULT;
@@ -59,9 +59,9 @@ int AcmeSyslog::getMode() {
   return mode;
 }
 
-void AcmeSyslog::setAppName(String a) {
-  app_name = a;
-  syslog.appName(a.c_str());
+void AcmeSyslog::setAppName(const char* a) {
+  app_name = String(a);
+  syslog.appName(a);
 }
 
 String AcmeSyslog::getAppName() {
@@ -123,30 +123,43 @@ long AcmeSyslog::getSerialSpeed() {
   return serial_speed;
 }
 
-void AcmeSyslog::configSyslog(String s, int p, String h, String a, int dp){
-  setSyslogServer(s, p);
+void AcmeSyslog::configSyslog(const char* c, uint16_t p, const char* h, const char* a, int dp){
+  setSyslogServer(c, p);
   setDeviceHostname(h);
   setAppName(a);
   setSyslogDefaultPriority(dp);
 }
 
-void AcmeSyslog::setSyslogServer(String s, int p) {
-  syslog.server(s.c_str(), p);
+void AcmeSyslog::setSyslogActive(bool a) {
+  syslog_active = a;
+}
+
+bool AcmeSyslog::getSyslogActive() {
+  return syslog_active;
+}
+
+void AcmeSyslog::activateSyslog() {
+  setSyslogActive(true);
+}
+
+void AcmeSyslog::setSyslogServer(const char* c, uint16_t p) {
+  syslog.server(c, p);
 }
 
 void AcmeSyslog::setSyslogDefaultPriority(int dp) {
   syslog.defaultPriority(dp);
 }
 
-void AcmeSyslog::setDeviceHostname(String h) {
-  syslog.deviceHostname(h.c_str());
-  device_hostname = h;
+void AcmeSyslog::setDeviceHostname(const char *h) {
+  syslog.deviceHostname(h);
+  device_hostname = String(h);
 }
 
 void AcmeSyslog::init() {
 
+  setSyslogActive(false);
   setAppName(DEFAULT_APP_NAME);
-  setDeviceHostname(DEFAULT_HOSTNAME);
+  setSyslogDefaultPriority(DEFAULT_PRIORITY);
   
   if (getMode() | USE_SERIAL) {
    initSerial(getSerialSpeed());
@@ -269,24 +282,27 @@ String AcmeSyslog::toDigits(long d) {
 void AcmeSyslog::logf(int l, const char *fmt, ...) {
   char b[200];
   char serial_buf[255];
+  char syslog_buf[255];
   va_list args;
 
   va_start(args, fmt);
   vsprintf(b, fmt, args);
   va_end(args);
 
+  sprintf(syslog_buf, "%s", b);
+
   log_timestamp ? sprintf(serial_buf, "%s %s: %s", formatTimestamp(now()).c_str(), getAppName().c_str(), b) : sprintf(serial_buf, "%s", b);
   
-  if (mode | USE_SERIAL && l <= getSerialLogLevel() && serial_init) {  
+  if (mode & USE_SERIAL && l <= getSerialLogLevel() && serial_init) {  
     Serial.println(serial_buf);
   }
 
-  if (mode | USE_FILE && l <= getFileLogLevel() && file_init) {
+  if (mode & USE_FILE && l <= getFileLogLevel() && file_init) {
     syslog_file.println(serial_buf);
   }
 
-  if (mode | USE_SYSLOG) {
-    syslog.log(getSyslogLogLevel(), b);
+  if (mode & USE_SYSLOG && syslog_active) {
+    syslog.logf(getSyslogLogLevel(), "%s", syslog_buf);
   }
   
   return;

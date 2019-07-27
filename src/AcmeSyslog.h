@@ -33,6 +33,8 @@
 #define LOG_LEVEL_DEFAULT LOG_INFO
 #define LOG_TIMESTAMP_DEFAULT true
 
+#define DEFAULT_PRIORITY LOG_KERN
+
 #define DEFAULT_APP_NAME "sketch"
 #define DEFAULT_HOSTNAME "esp8266"
 
@@ -64,14 +66,17 @@ class AcmeSyslog {
     bool getLogTimestamp(); 
     void setSerialSpeed(long s); 
     long getSerialSpeed();
-    void setSyslogServer(String s, int p);
-    void setDeviceHostname(String h);
+    void setSyslogServer(const char* c, uint16_t p);
+    void setDeviceHostname(const char *h);
     String getDeviceHostname();
-    void setAppName(String a);
+    void setAppName(const char* a);
     String getAppName();
-    void configSyslog(String s, int p, String h, String a, int dp);
+    void configSyslog(const char* c, uint16_t p, const char* h, const char* a, int dp);
     void setSyslogDefaultPriority(int db); 
     void init();
+    void setSyslogActive(bool a);
+    bool getSyslogActive();
+    void activateSyslog();
     void initSyslog();
     void configSyslog();
     void initFile();

@@ -10,14 +10,14 @@
 const char* ssid     = STASSID;
 const char* password = STAPSK;
 
-AcmeSyslog a(USE_SERIAL | USE_FILE | USE_SYSLOG);
+AcmeSyslog a(USE_SERIAL | USE_FILE);
 
 int i = 0;
 
 void setup() {
   a.init();
   a.eraseFileLog();
-  a.setSyslogServer("192.168.109.1", 514);
+  
 
   WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
@@ -28,11 +28,15 @@ void setup() {
   }
 
   a.logf(LOG_INFO, "WiFi Connected, IP Addr: %s", IpAddress2String(WiFi.localIP()).c_str());
+  a.logf(LOG_INFO, "Hostname is %s", WiFi.hostname().c_str());
+
+  a.setSyslogServer("192.168.109.1", 514);
+  a.activateSyslog();
 
 }
 
 void loop() {
-  a.logf(LOG_WARNING, "loop %i", i++);
+  a.logf(LOG_ERR, "loop %i", i++);
   if (i == 10) {
     a.dumpFileLog(); 
   }

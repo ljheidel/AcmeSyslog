@@ -33,3 +33,4 @@
 
 # Arduino-specific
 .development
+creds.h

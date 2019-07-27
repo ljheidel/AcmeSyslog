@@ -34,7 +34,7 @@ bool file_init = false;
 int serial_speed = SERIAL_SPEED_DEFAULT;
 bool log_timestamp = LOG_TIMESTAMP_DEFAULT;
 
-String app_name;
+String app_name, device_hostname;
 
 File syslog_file;
 
@@ -61,7 +61,7 @@ int AcmeSyslog::getMode() {
 
 void AcmeSyslog::setAppName(String a) {
   app_name = a;
-  syslog.appName(a);
+  syslog.appName(a.c_str());
 }
 
 String AcmeSyslog::getAppName() {
@@ -125,26 +125,28 @@ long AcmeSyslog::getSerialSpeed() {
 
 void AcmeSyslog::configSyslog(String s, int p, String h, String a, int dp){
   setSyslogServer(s, p);
-  setSyslogDeviceHostname(h);
+  setDeviceHostname(h);
   setAppName(a);
-  setSyslogDefaultPriority(db);
+  setSyslogDefaultPriority(dp);
 }
 
 void AcmeSyslog::setSyslogServer(String s, int p) {
-  syslog.server(s, p);
-}
-
-void AcmeSyslog::setSyslogDeviceHostname(String h) {
-  syslog.deviceHostname(h);
+  syslog.server(s.c_str(), p);
 }
 
 void AcmeSyslog::setSyslogDefaultPriority(int dp) {
   syslog.defaultPriority(dp);
 }
 
+void AcmeSyslog::setDeviceHostname(String h) {
+  syslog.deviceHostname(h.c_str());
+  device_hostname = h;
+}
+
 void AcmeSyslog::init() {
 
   setAppName(DEFAULT_APP_NAME);
+  setDeviceHostname(DEFAULT_HOSTNAME);
   
   if (getMode() | USE_SERIAL) {
    initSerial(getSerialSpeed());
@@ -273,7 +275,7 @@ void AcmeSyslog::logf(int l, const char *fmt, ...) {
   vsprintf(b, fmt, args);
   va_end(args);
 
-  log_timestamp ? sprintf(serial_buf, "%s %s: %s", formatTimestamp(now()).c_str(), getService().c_str(), b) : sprintf(serial_buf, "%s", b);
+  log_timestamp ? sprintf(serial_buf, "%s %s: %s", formatTimestamp(now()).c_str(), getAppName().c_str(), b) : sprintf(serial_buf, "%s", b);
   
   if (mode | USE_SERIAL && l <= getSerialLogLevel() && serial_init) {  
     Serial.println(serial_buf);

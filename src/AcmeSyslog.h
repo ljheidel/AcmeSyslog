@@ -34,6 +34,7 @@
 #define LOG_TIMESTAMP_DEFAULT true
 
 #define DEFAULT_APP_NAME "sketch"
+#define DEFAULT_HOSTNAME "esp8266"
 
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
@@ -64,8 +65,11 @@ class AcmeSyslog {
     void setSerialSpeed(long s); 
     long getSerialSpeed();
     void setSyslogServer(String s, int p);
-    void setSyslogDeviceHostname(String h);
+    void setDeviceHostname(String h);
+    String getDeviceHostname();
     void setAppName(String a);
+    String getAppName();
+    void configSyslog(String s, int p, String h, String a, int dp);
     void setSyslogDefaultPriority(int db); 
     void init();
     void initSyslog();

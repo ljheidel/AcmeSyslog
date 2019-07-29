@@ -44,7 +44,7 @@
 #include <Syslog.h>
 #include <FS.h>
 #include <stdarg.h>
-#include <Time.h>
+#include <time.h>
 
 class AcmeSyslog {
   public:
@@ -88,7 +88,7 @@ class AcmeSyslog {
     void logf(int l, const char *fmt, ...);
   private:
     String formatTimestamp(time_t t);
-    String toDigits(long d);
+    String toDigits(int i); 
 /*    WiFiUDP syslogUDP;
     Syslog syslog; */
 };

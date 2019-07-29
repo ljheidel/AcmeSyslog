@@ -36,6 +36,8 @@ bool log_timestamp = LOG_TIMESTAMP_DEFAULT;
 
 String app_name, device_hostname;
 
+String short_months[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+
 File syslog_file;
 
 WiFiUDP udp_client;
@@ -161,17 +163,17 @@ void AcmeSyslog::init() {
   setAppName(DEFAULT_APP_NAME);
   setSyslogDefaultPriority(DEFAULT_PRIORITY);
   
-  if (getMode() | USE_SERIAL) {
+  if (getMode() & USE_SERIAL) {
    initSerial(getSerialSpeed());
   }
 
-  if (getMode() | USE_FILE) {
+  if (getMode() & USE_FILE) {
     initFile();
   }
 }
 
 void AcmeSyslog::initSyslog() {
-  if (getMode() | USE_SYSLOG) {
+  if (getMode() & USE_SYSLOG) {
 
   }
   return;
@@ -254,6 +256,7 @@ void AcmeSyslog::eraseFileLog() {
   }
 }
 
+/*
 String AcmeSyslog::formatTimestamp(time_t t) {
   String buf;
   buf = monthShortStr(month(t));
@@ -267,17 +270,25 @@ String AcmeSyslog::formatTimestamp(time_t t) {
   buf += toDigits(second(t));
   return buf;
 }
-
-String AcmeSyslog::toDigits(long d) {
+*/
+String AcmeSyslog::toDigits(int i) {
   String r;
-  if (d < 10) {
+  if (i < 10) {
     r = "0";
-    r += (String)d;
+    r += (String)i;
   } else {
-    r = (String)d;
+    r = (String)i;
   }
   return r;
 }
+
+String AcmeSyslog::formatTimestamp(time_t t) {
+  tm* dt = gmtime(&t);
+  char buf[80];
+  sprintf(buf, "%s %i %s:%s:%s", short_months[dt->tm_mon].c_str(), dt->tm_mday, toDigits(dt->tm_hour).c_str(), toDigits(dt->tm_min).c_str(), toDigits(dt->tm_sec).c_str());
+  return String(buf);  
+}
+
 
 void AcmeSyslog::logf(int l, const char *fmt, ...) {
   char b[200];
@@ -291,7 +302,9 @@ void AcmeSyslog::logf(int l, const char *fmt, ...) {
 
   sprintf(syslog_buf, "%s", b);
 
-  log_timestamp ? sprintf(serial_buf, "%s %s: %s", formatTimestamp(now()).c_str(), getAppName().c_str(), b) : sprintf(serial_buf, "%s", b);
+  time_t now = time(nullptr);
+
+  log_timestamp ? sprintf(serial_buf, "%s %s: %s", formatTimestamp(now).c_str(), getAppName().c_str(), b) : sprintf(serial_buf, "%s", b);
   
   if (mode & USE_SERIAL && l <= getSerialLogLevel() && serial_init) {  
     Serial.println(serial_buf);

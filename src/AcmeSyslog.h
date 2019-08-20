@@ -5,7 +5,7 @@
  *  
  *  This file is part of AcmeSyslog.
  *
- *  Foobar is free software: you can redistribute it and/or modify
+ *  AcmeSyslog is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
@@ -74,6 +74,7 @@ class AcmeSyslog {
     void setSerialSpeed(long s); 
     long getSerialSpeed();
     void setSyslogServer(const char* c, uint16_t p);
+    void setSyslogServer(IPAddress i, uint16_t p);
     void setDeviceHostname(const char *h);
     String getDeviceHostname();
     void setAppName(const char* a);

@@ -5,7 +5,7 @@
  *  
  *  This file is part of AcmeSyslog.
  *
- *  Foobar is free software: you can redistribute it and/or modify
+ *  AcmeSyslog is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
@@ -146,6 +146,10 @@ void AcmeSyslog::activateSyslog() {
 
 void AcmeSyslog::setSyslogServer(const char* c, uint16_t p) {
   syslog.server(c, p);
+}
+
+void AcmeSyslog::setSyslogServer(IPAddress i, uint16_t p) {
+  syslog.server(i, p);
 }
 
 void AcmeSyslog::setSyslogDefaultPriority(int dp) {

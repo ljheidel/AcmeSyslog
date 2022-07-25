@@ -26,6 +26,7 @@
 #define USE_SERIAL 0x1
 #define USE_FILE 0x2
 #define USE_SYSLOG 0x4
+#define USE_CALLBACK 0x8
 
 #define DEFAULT_SYSLOG_FILENAME "/log/syslog"
 
@@ -69,6 +70,8 @@ class AcmeSyslog {
     int getSyslogLogLevel();
     void setFileLogLevel(int f);
     int getFileLogLevel();
+    void setCallbackLogLevel(int f);
+    int getCallbackLogLevel();
     void setLogTimestamp(bool t); 
     bool getLogTimestamp(); 
     void setSerialSpeed(long s); 
@@ -94,6 +97,7 @@ class AcmeSyslog {
     void logMsg(String s);
     void logMsg(int l, String s);
     void logf(int l, const char *fmt, ...);
+    void setCallback(void f(char *));
   private:
     String formatTimestamp(time_t t);
     String toDigits(int i); 

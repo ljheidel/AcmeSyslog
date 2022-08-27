@@ -63,4 +63,4 @@ PROTIP:  Set your RTC for sweet timestamps
     void logf(int l, const char *fmt, ...);
     void setCallback(void f(char *));
 
-Version 0.3.1
+Version 0.3.2

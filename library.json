@@ -1,6 +1,6 @@
 {
     "name": "AcmeSyslog",
-    "version": "0.3.0",
+    "version": "0.3.2",
     "description": "A multi-output Arduino system logging library for the ESP32/ESP8266.",
     "keywords": "syslog, logging",
     "repository":

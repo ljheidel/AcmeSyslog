@@ -24,7 +24,7 @@
 #ifndef AcmeSyslog_h
 #define AcmeSyslog_h
 
-#define AcmeSyslogVersion "0.3.0"
+#define AcmeSyslogVersion "0.3.2"
 
 #define USE_SERIAL 0x1
 #define USE_FILE 0x2

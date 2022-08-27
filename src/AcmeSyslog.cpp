@@ -4,7 +4,8 @@
  *  Author: Luke Heidelberger <ljheidel@gmail.com>
  *  Date:   27 Aug 2022
  *  
- *  This file is part of AcmeSyslog.
+ *  This file is part of AcmeSyslog by Acme Amalgamated Widgets, 
+ *  a division of Acme Medium Machine Building.
  *
  *  AcmeSyslog is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

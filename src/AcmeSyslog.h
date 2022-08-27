@@ -5,7 +5,7 @@
  *  
  *  This file is part of AcmeSyslog.
  *
- *  Foobar is free software: you can redistribute it and/or modify
+ *  AcmeSyslog is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
@@ -26,6 +26,7 @@
 #define USE_SERIAL 0x1
 #define USE_FILE 0x2
 #define USE_SYSLOG 0x4
+#define USE_CALLBACK 0x8
 
 #define DEFAULT_SYSLOG_FILENAME "/log/syslog"
 
@@ -39,12 +40,19 @@
 #define DEFAULT_HOSTNAME "esp8266"
 
 #include <Arduino.h>
+#ifdef ESP32
+#include <WiFi.h>
+#include <SPIFFS.h>
+#elif defined(ESP8266)
 #include <ESP8266WiFi.h>
+#include <FS.h>
+#else
+#error Platform not supported
+#endif
 #include <WiFiUdp.h>
 #include <Syslog.h>
-#include <FS.h>
 #include <stdarg.h>
-#include <Time.h>
+#include <time.h>
 
 class AcmeSyslog {
   public:
@@ -62,11 +70,14 @@ class AcmeSyslog {
     int getSyslogLogLevel();
     void setFileLogLevel(int f);
     int getFileLogLevel();
+    void setCallbackLogLevel(int f);
+    int getCallbackLogLevel();
     void setLogTimestamp(bool t); 
     bool getLogTimestamp(); 
     void setSerialSpeed(long s); 
     long getSerialSpeed();
     void setSyslogServer(const char* c, uint16_t p);
+    void setSyslogServer(IPAddress i, uint16_t p);
     void setDeviceHostname(const char *h);
     String getDeviceHostname();
     void setAppName(const char* a);
@@ -86,9 +97,10 @@ class AcmeSyslog {
     void logMsg(String s);
     void logMsg(int l, String s);
     void logf(int l, const char *fmt, ...);
+    void setCallback(void f(char *));
   private:
     String formatTimestamp(time_t t);
-    String toDigits(long d);
+    String toDigits(int i); 
 /*    WiFiUDP syslogUDP;
     Syslog syslog; */
 };

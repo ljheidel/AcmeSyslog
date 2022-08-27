@@ -5,7 +5,7 @@
  *  
  *  This file is part of AcmeSyslog.
  *
- *  Foobar is free software: you can redistribute it and/or modify
+ *  AcmeSyslog is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation, either version 3 of the License, or
  *  (at your option) any later version.
@@ -26,6 +26,7 @@ int mode = USE_SERIAL;
 int serial_log_level = LOG_LEVEL_DEFAULT;
 int syslog_log_level = LOG_LEVEL_DEFAULT;
 int file_log_level = LOG_LEVEL_DEFAULT;
+int callback_log_level = LOG_LEVEL_DEFAULT;
 
 bool serial_init = false;
 bool syslog_active = false;
@@ -36,12 +37,16 @@ bool log_timestamp = LOG_TIMESTAMP_DEFAULT;
 
 String app_name, device_hostname;
 
+String short_months[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
+
 File syslog_file;
 
 WiFiUDP udp_client;
-Syslog syslog(udp_client, SYSLOG_PROTO_IETF);
+Syslog syslog(udp_client, SYSLOG_PROTO_BSD);
 
 String syslog_filename = DEFAULT_SYSLOG_FILENAME;
+
+void (*loggerCallback)(char *) = NULL;
 
 AcmeSyslog::AcmeSyslog() {
 
@@ -107,6 +112,15 @@ int AcmeSyslog::getFileLogLevel() {
   return file_log_level;
 }
 
+void AcmeSyslog::setCallbackLogLevel(int f) {
+  callback_log_level = f;
+  return;
+}
+
+int AcmeSyslog::getCallbackLogLevel() {
+  return callback_log_level;
+}
+
 void AcmeSyslog::setLogTimestamp(bool t) {
   log_timestamp = t;
 }
@@ -146,6 +160,10 @@ void AcmeSyslog::setSyslogServer(const char* c, uint16_t p) {
   syslog.server(c, p);
 }
 
+void AcmeSyslog::setSyslogServer(IPAddress i, uint16_t p) {
+  syslog.server(i, p);
+}
+
 void AcmeSyslog::setSyslogDefaultPriority(int dp) {
   syslog.defaultPriority(dp);
 }
@@ -161,17 +179,17 @@ void AcmeSyslog::init() {
   setAppName(DEFAULT_APP_NAME);
   setSyslogDefaultPriority(DEFAULT_PRIORITY);
   
-  if (getMode() | USE_SERIAL) {
+  if (getMode() & USE_SERIAL) {
    initSerial(getSerialSpeed());
   }
 
-  if (getMode() | USE_FILE) {
+  if (getMode() & USE_FILE) {
     initFile();
   }
 }
 
 void AcmeSyslog::initSyslog() {
-  if (getMode() | USE_SYSLOG) {
+  if (getMode() & USE_SYSLOG) {
 
   }
   return;
@@ -208,8 +226,10 @@ void AcmeSyslog::initSerial(int s) {
     Serial.begin(s);
   }
   if (getMode() | USE_SERIAL) {
+    char s[255];
+    sprintf(s, "Serial logging initialized for AcmeSyslog instance at %08x", this);
     serial_init = true;
-    Serial.println("Serial logging initialized");
+    Serial.println(s);
   }
   return;
 }
@@ -254,6 +274,7 @@ void AcmeSyslog::eraseFileLog() {
   }
 }
 
+/*
 String AcmeSyslog::formatTimestamp(time_t t) {
   String buf;
   buf = monthShortStr(month(t));
@@ -267,21 +288,34 @@ String AcmeSyslog::formatTimestamp(time_t t) {
   buf += toDigits(second(t));
   return buf;
 }
-
-String AcmeSyslog::toDigits(long d) {
+*/
+String AcmeSyslog::toDigits(int i) {
   String r;
-  if (d < 10) {
+  if (i < 10) {
     r = "0";
-    r += (String)d;
+    r += (String)i;
   } else {
-    r = (String)d;
+    r = (String)i;
   }
   return r;
 }
 
+String AcmeSyslog::formatTimestamp(time_t t) {
+  tm* dt = gmtime(&t);
+  char buf[80];
+  sprintf(buf, "%s %i %s:%s:%s", short_months[dt->tm_mon].c_str(), dt->tm_mday, toDigits(dt->tm_hour).c_str(), toDigits(dt->tm_min).c_str(), toDigits(dt->tm_sec).c_str());
+  return String(buf);  
+}
+
+void AcmeSyslog::setCallback(void f(char *)) {
+  loggerCallback = f;
+}
+
+
 void AcmeSyslog::logf(int l, const char *fmt, ...) {
   char b[200];
   char serial_buf[255];
+  char callback_buf[255];
   char syslog_buf[255];
   va_list args;
 
@@ -290,8 +324,12 @@ void AcmeSyslog::logf(int l, const char *fmt, ...) {
   va_end(args);
 
   sprintf(syslog_buf, "%s", b);
+  sprintf(callback_buf, "%s", b);
 
-  log_timestamp ? sprintf(serial_buf, "%s %s: %s", formatTimestamp(now()).c_str(), getAppName().c_str(), b) : sprintf(serial_buf, "%s", b);
+  time_t now = time(nullptr);
+
+  log_timestamp ? sprintf(serial_buf, "%s %s: %s", formatTimestamp(now).c_str(), getAppName().c_str(), b) : sprintf(serial_buf, "%s", b);
+  log_timestamp ? sprintf(callback_buf, "%s %s: %s", formatTimestamp(now).c_str(), getAppName().c_str(), b) : sprintf(callback_buf, "%s", b);
   
   if (mode & USE_SERIAL && l <= getSerialLogLevel() && serial_init) {  
     Serial.println(serial_buf);
@@ -304,7 +342,10 @@ void AcmeSyslog::logf(int l, const char *fmt, ...) {
   if (mode & USE_SYSLOG && syslog_active) {
     syslog.logf(getSyslogLogLevel(), "%s", syslog_buf);
   }
+
+  if (mode & USE_CALLBACK && loggerCallback != NULL && l <= getCallbackLogLevel()) {
+    loggerCallback(callback_buf);
+  }
   
   return;
 }
-

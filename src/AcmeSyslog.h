@@ -1,7 +1,7 @@
 /*
  *  AcmeSyslog.h
  *  Author: Luke Heidelberger <ljheidel@gmail.com>
- *  Date:   27 Jul 2019
+ *  Date:   27 Aug 2022
  *  
  *  This file is part of AcmeSyslog.
  *
@@ -16,7 +16,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with AcmeLogger.  If not, see <https://www.gnu.org/licenses/>.
+ *  along with AcmeSyslog.  If not, see <https://www.gnu.org/licenses/>.
  *  
  */
 
